@@ -1,0 +1,776 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Travian Farm Analyzer — Docs</title>
+<style>
+  :root {
+    --bg: #0f1115; --panel: #1a1d24; --panel2: #232831;
+    --text: #e4e6eb; --muted: #9aa0a6;
+    --accent: #ffc107; --green: #4caf50; --red: #f44336;
+    --orange: #ff9800; --blue: #2196f3; --border: #262a33;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg); color: var(--text);
+    margin: 0; padding: 0; line-height: 1.55; position: relative;
+  }
+  .lang-toggle {
+    position: fixed; top: 16px; right: 20px; z-index: 10;
+    display: flex; gap: 2px; background: var(--panel2);
+    border-radius: 6px; padding: 3px; border: 1px solid var(--border);
+  }
+  .lang-toggle button {
+    background: transparent; color: var(--muted); border: none;
+    padding: 4px 10px; border-radius: 4px; cursor: pointer;
+    font-weight: 600; font-size: 11px; min-width: 32px; letter-spacing: 0.5px;
+  }
+  .lang-toggle button:hover { color: var(--text); background: rgba(255,255,255,0.05); }
+  .lang-toggle button.active { background: var(--accent); color: #000; }
+
+  .layout { display: grid; grid-template-columns: 240px 1fr; max-width: 1200px; margin: 0 auto; }
+  nav.toc {
+    position: sticky; top: 0; height: 100vh; overflow-y: auto;
+    padding: 24px 12px 24px 24px;
+    border-right: 1px solid var(--border);
+    background: var(--bg);
+  }
+  nav.toc h3 { color: var(--accent); font-size: 14px; margin: 0 0 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+  nav.toc ol { list-style: none; padding: 0; margin: 0; counter-reset: tocCounter; }
+  nav.toc li { counter-increment: tocCounter; margin: 4px 0; font-size: 13px; }
+  nav.toc li::before { content: counter(tocCounter) ". "; color: var(--muted); }
+  nav.toc a { color: var(--text); text-decoration: none; }
+  nav.toc a:hover { color: var(--accent); }
+
+  main { padding: 28px 32px 80px; max-width: 920px; }
+  h1 { color: var(--accent); font-size: 26px; margin: 0 0 6px; }
+  .subtitle { color: var(--muted); margin: 0 0 32px; font-size: 14px; }
+  h2 {
+    color: var(--accent); margin: 36px 0 10px;
+    font-size: 19px; padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  h3 { color: var(--text); font-size: 15px; margin: 18px 0 6px; }
+  p { margin: 6px 0 10px; }
+  ul, ol { padding-left: 22px; }
+  li { margin: 3px 0; }
+  code { background: var(--panel2); padding: 1px 6px; border-radius: 4px; font-family: 'Consolas','Menlo',monospace; font-size: 12.5px; color: #ffe082; }
+  .formula {
+    background: var(--panel); border-left: 4px solid var(--accent);
+    padding: 14px 16px; margin: 10px 0; border-radius: 6px;
+    font-family: 'Consolas','Menlo',monospace; font-size: 14px;
+    color: #fff;
+  }
+  .formula .label { display: block; color: var(--muted); font-family: -apple-system, sans-serif; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .example {
+    background: rgba(76,175,80,0.06); border-left: 4px solid var(--green);
+    padding: 12px 16px; margin: 8px 0 14px; border-radius: 6px;
+    font-size: 13px;
+  }
+  .example .label { color: var(--green); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .note {
+    background: rgba(255,152,0,0.06); border-left: 4px solid var(--orange);
+    padding: 10px 14px; margin: 10px 0; border-radius: 6px;
+    font-size: 13px; color: var(--text);
+  }
+  .note .label { color: var(--orange); font-weight: 600; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0 16px; background: var(--panel); border-radius: 8px; overflow: hidden; font-size: 13px; }
+  th, td { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--border); }
+  th { background: var(--panel2); color: var(--accent); }
+  td.num { text-align: right; font-family: 'Consolas','Menlo',monospace; }
+  .keymet { color: var(--accent); font-weight: 600; }
+  hr { border: 0; border-top: 1px solid var(--border); margin: 28px 0; }
+  @media (max-width: 800px) {
+    .layout { grid-template-columns: 1fr; }
+    nav.toc { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--border); }
+  }
+</style>
+</head>
+<body>
+
+<div class="lang-toggle">
+  <button data-lang="en" type="button">EN</button>
+  <button data-lang="es" type="button">ES</button>
+</div>
+
+<div class="layout">
+
+<nav class="toc">
+  <h3 data-i18n="toc.title">Índice</h3>
+  <ol>
+    <li><a href="#intro"     data-i18n="toc.1">Introducción</a></li>
+    <li><a href="#inputs"    data-i18n="toc.2">Datos de entrada</a></li>
+    <li><a href="#params"    data-i18n="toc.3">Parámetros configurables</a></li>
+    <li><a href="#time"      data-i18n="toc.4">Tiempo ida+vuelta (T)</a></li>
+    <li><a href="#groups"    data-i18n="toc.5">Oleadas solapadas (groups)</a></li>
+    <li><a href="#troops"    data-i18n="toc.6">Tropas necesarias</a></li>
+    <li><a href="#fill"      data-i18n="toc.7">Capacidad y fill %</a></li>
+    <li><a href="#profit"    data-i18n="toc.8">Rentabilidad R/h y R/T/h</a></li>
+    <li><a href="#sums"      data-i18n="toc.9">Agregación por aldea, lista y global</a></li>
+    <li><a href="#history"   data-i18n="toc.10">Histórico entre snapshots</a></li>
+    <li><a href="#costAtD"   data-i18n="toc.11">Coste a una distancia (sobrantes)</a></li>
+    <li><a href="#budget"    data-i18n="toc.12">Recomendación de qué eliminar</a></li>
+    <li><a href="#state"     data-i18n="toc.13">Estado: activa / inactiva</a></li>
+    <li><a href="#color"     data-i18n="toc.14">Color de filas</a></li>
+    <li><a href="#troopdet"  data-i18n="toc.t1">Tropa detectada (vel/carga)</a></li>
+    <li><a href="#prodest"   data-i18n="toc.t2">Producción estimada y Disputada</a></li>
+    <li><a href="#raidh"     data-i18n="toc.t3">Atraco medio por hora</a></li>
+    <li><a href="#troopbreak" data-i18n="toc.t4">Tropas por tipo (aldea)</a></li>
+    <li><a href="#limits"    data-i18n="toc.15">Limitaciones honestas</a></li>
+  </ol>
+</nav>
+
+<main>
+
+<h1 id="intro"  data-i18n="title">Travian Farm Analyzer — cómo calcula</h1>
+<p class="subtitle" data-i18n="subtitle">Documentación de todas las fórmulas que aplica la herramienta.</p>
+
+<p data-i18n-html="intro.body"></p>
+
+<h2 data-i18n="s1.title">1. Datos de entrada</h2>
+<p data-i18n-html="s1.intro"></p>
+<table>
+  <thead><tr>
+    <th data-i18n="tbl.col.field">Campo</th>
+    <th data-i18n="tbl.col.origin">Origen</th>
+    <th data-i18n="tbl.col.meaning">Significado</th>
+  </tr></thead>
+  <tbody>
+    <tr><td><code>name</code></td>      <td data-i18n="s1.r1.o">Paste</td>             <td data-i18n="s1.r1.m"></td></tr>
+    <tr><td><code>dist</code></td>      <td data-i18n="s1.r2.o">Paste</td>             <td data-i18n="s1.r2.m"></td></tr>
+    <tr><td><code>troops</code></td>    <td data-i18n="s1.r3.o">Paste</td>             <td data-i18n="s1.r3.m"></td></tr>
+    <tr><td><code>stolen</code></td>    <td data-i18n="s1.r4.o">Paste — último raid</td><td data-i18n="s1.r4.m"></td></tr>
+    <tr><td><code>totalLoot</code></td> <td data-i18n="s1.r5.o">Paste — Σ diario</td>  <td data-i18n="s1.r5.m"></td></tr>
+    <tr><td><code>time</code></td>      <td data-i18n="s1.r6.o">Paste</td>             <td data-i18n="s1.r6.m"></td></tr>
+    <tr><td><code>x, y</code></td>      <td data-i18n="s1.r7.o">Paste HTML</td>        <td data-i18n="s1.r7.m"></td></tr>
+  </tbody>
+</table>
+
+<h2 id="params" data-i18n="s2.title">2. Parámetros configurables</h2>
+<p data-i18n-html="s2.intro"></p>
+<table>
+  <thead><tr>
+    <th data-i18n="tbl.col.param">Param</th>
+    <th data-i18n="tbl.col.default">Default</th>
+    <th data-i18n="tbl.col.desc">Descripción</th>
+  </tr></thead>
+  <tbody>
+    <tr><td><code>baseSpeed</code></td>  <td class="num">19</td>  <td data-i18n="s2.r1"></td></tr>
+    <tr><td><code>tsPct</code></td>      <td class="num">300</td> <td data-i18n="s2.r2"></td></tr>
+    <tr><td><code>threshold</code></td>  <td class="num">20</td>  <td data-i18n="s2.r3"></td></tr>
+    <tr><td><code>intervalMin</code></td><td class="num">30</td>  <td data-i18n="s2.r4"></td></tr>
+    <tr><td><code>carry</code></td>      <td class="num">75</td>  <td data-i18n="s2.r5"></td></tr>
+  </tbody>
+</table>
+
+<h2 id="time" data-i18n="s3.title">3. Tiempo de ida+vuelta (T)</h2>
+<p data-i18n-html="s3.intro"></p>
+<div class="formula">
+  <span class="label" data-i18n="s3.f1.lab">Velocidad rápida</span>
+  fastSpeed = baseSpeed × (tsPct / 100)
+</div>
+<div class="formula">
+  <span class="label" data-i18n="s3.f2.lab">Tiempo de ida (h)</span>
+  <span data-i18n-html="s3.f2.body"></span>
+</div>
+<div class="formula">
+  <span class="label" data-i18n="s3.f3.lab">Tiempo total</span>
+  T = 2 × oneWay
+</div>
+<div class="example">
+  <span class="label" data-i18n="s3.ex.lab">Ejemplo</span>
+  <p data-i18n-html="s3.ex.body"></p>
+</div>
+
+<h2 id="groups" data-i18n="s4.title">4. Oleadas solapadas necesarias (groups)</h2>
+<p data-i18n-html="s4.intro"></p>
+<div class="formula">
+  <span class="label" data-i18n="s4.f.lab">Grupos por farm</span>
+  <span data-i18n-html="s4.f.body"></span>
+</div>
+<div class="example">
+  <span class="label" data-i18n="s4.ex.lab">Ejemplo</span>
+  <p data-i18n-html="s4.ex.body"></p>
+</div>
+
+<h2 id="troops" data-i18n="s5.title">5. Tropas necesarias por farm y globales</h2>
+<p data-i18n-html="s5.intro"></p>
+<div class="formula">
+  <span class="label" data-i18n="s5.f1.lab">Tropas dedicadas a UNA farm</span>
+  ttTotal = tt × groups
+</div>
+<p data-i18n-html="s5.p2"></p>
+<div class="formula">
+  <span class="label" data-i18n="s5.f2.lab">Suma agregada</span>
+  <span data-i18n-html="s5.f2.body"></span>
+</div>
+<div class="example">
+  <span class="label" data-i18n="s5.ex.lab">Ejemplo</span>
+  <p data-i18n-html="s5.ex.body"></p>
+</div>
+
+<h2 id="fill" data-i18n="s6.title">6. Capacidad enviada y fill %</h2>
+<div class="formula">
+  <span class="label" data-i18n="s6.f1.lab">Capacidad por oleada</span>
+  cap = tt × carry
+</div>
+<div class="formula">
+  <span class="label" data-i18n="s6.f2.lab">Fill % — qué llenas vs. lo que envías</span>
+  <span data-i18n-html="s6.f2.body"></span>
+</div>
+<p data-i18n-html="s6.p"></p>
+
+<h2 id="profit" data-i18n="s7.title">7. Métricas de rentabilidad</h2>
+<div class="formula">
+  <span class="label" data-i18n="s7.f1.lab">Recursos por hora</span>
+  R/h = stolen / T
+</div>
+<div class="formula">
+  <span class="label" data-i18n="s7.f2.lab">Recursos por tropa por hora</span>
+  R/T/h = stolen / (tt × T)
+</div>
+<p data-i18n-html="s7.p"></p>
+<div class="example">
+  <span class="label" data-i18n="s7.ex.lab">Ejemplo</span>
+  <p data-i18n-html="s7.ex.body"></p>
+</div>
+
+<h2 id="sums" data-i18n="s8.title">8. Agregación por aldea, lista y global</h2>
+<p data-i18n-html="s8.intro"></p>
+<div class="formula">
+  <span class="label" data-i18n="s8.f1.lab">Sumas directas</span>
+  farms_count, ttWave (=Σ tt), ttTotal (=Σ ttTotal), stolen (=Σ stolen), totalLoot (=Σ totalLoot), cap (=Σ cap)
+</div>
+<div class="formula">
+  <span class="label" data-i18n="s8.f2.lab">Medias</span>
+  <span data-i18n-html="s8.f2.body"></span>
+</div>
+
+<h2 id="history" data-i18n="s9.title">9. Histórico entre snapshots</h2>
+<p data-i18n-html="s9.intro"></p>
+
+<h3 data-i18n="s9.sub1">9.1 Agrupación por día del servidor</h3>
+<p data-i18n-html="s9.p1"></p>
+<div class="formula">
+  <span class="label" data-i18n="s9.f1.lab">Día del snapshot</span>
+  <span data-i18n-html="s9.f1.body"></span>
+</div>
+
+<h3 data-i18n="s9.sub2">9.2 Σ diario por farm</h3>
+<p data-i18n-html="s9.p2"></p>
+<div class="formula">
+  <span class="label" data-i18n="s9.f2.lab">Σ diario por farm</span>
+  dailyTotal(farm, día) = MAX(totalLoot) of all snapshots that day
+</div>
+
+<h3 data-i18n="s9.sub3">9.3 Media entre días</h3>
+<p data-i18n-html="s9.p3"></p>
+<div class="formula">
+  <span class="label" data-i18n="s9.f3.lab">Promedios y desviación</span>
+  <span data-i18n-html="s9.f3.body"></span>
+</div>
+
+<h3 data-i18n="s9.sub4">9.4 Coeficiente de variación (CV %)</h3>
+<div class="formula">
+  <span class="label" data-i18n="s9.f4.lab">CV %</span>
+  CV = (stolenStd / stolen_avg) × 100
+</div>
+<p data-i18n-html="s9.p4"></p>
+
+<h3 data-i18n="s9.sub5">9.5 Recorte de outliers (opcional)</h3>
+<p data-i18n-html="s9.p5"></p>
+
+<h2 id="costAtD" data-i18n="s10.title">10. Estimación de coste a una distancia (sobrantes)</h2>
+<p data-i18n-html="s10.intro"></p>
+<div class="formula">
+  <span class="label" data-i18n="s10.f1.lab">Coste de UNA nueva farm a distancia d</span>
+  <span data-i18n-html="s10.f1.body"></span>
+</div>
+<div class="formula">
+  <span class="label" data-i18n="s10.f2.lab">Cuántas caben con el sobrante</span>
+  couldAddAtD = ⌊ excess / costAtD ⌋
+</div>
+
+<h2 id="budget" data-i18n="s11.title">11. Recomendación de qué farms eliminar (déficit)</h2>
+<p data-i18n-html="s11.intro"></p>
+<div class="formula">
+  <span class="label" data-i18n="s11.f.lab">Algoritmo greedy por R/T/h ascendente</span>
+  <span data-i18n-html="s11.f.body"></span>
+</div>
+<div class="note">
+  <span class="label" data-i18n="s11.note.lab">Nota</span>
+  <p data-i18n-html="s11.note.body"></p>
+</div>
+
+<h2 id="state" data-i18n="s12.title">12. Estado: activa / inactiva</h2>
+<p data-i18n-html="s12.intro"></p>
+<div class="formula">
+  <span class="label" data-i18n="s12.f.lab">isActive</span>
+  <span data-i18n-html="s12.f.body"></span>
+</div>
+<p data-i18n-html="s12.p"></p>
+
+<h2 id="color" data-i18n="s13.title">13. Color de filas en la tabla detalle</h2>
+<p data-i18n-html="s13.intro"></p>
+<div class="formula">
+  <span class="label" data-i18n="s13.f.lab">Cuartiles de R/T/h</span>
+  <span data-i18n-html="s13.f.body"></span>
+</div>
+<p data-i18n="s13.p">Color asignado a cada fila:</p>
+<ul>
+  <li data-i18n-html="s13.li1"></li>
+  <li data-i18n-html="s13.li2"></li>
+  <li data-i18n-html="s13.li3"></li>
+</ul>
+
+<h2 id="troopdet" data-i18n="sd.title">14. Tipo de tropa detectado (velocidad y carga por granja)</h2>
+<p data-i18n-html="sd.intro"></p>
+<div class="formula">
+  <span class="label" data-i18n="sd.f.lab">Velocidad y carga efectivas de la granja</span>
+  <span data-i18n-html="sd.f.body"></span>
+</div>
+<div class="note">
+  <span class="label" data-i18n="sd.note.lab">Nota</span>
+  <p data-i18n-html="sd.note.body"></p>
+</div>
+
+<h2 id="prodest" data-i18n="se.title">15. Producción estimada (Prod/h) y Disputada %</h2>
+<p data-i18n-html="se.intro"></p>
+<div class="formula">
+  <span class="label" data-i18n="se.f1.lab">Producción estimada (máximo histórico)</span>
+  <span data-i18n-html="se.f1.body"></span>
+</div>
+<div class="formula">
+  <span class="label" data-i18n="se.f2.lab">Disputada % (cuánto te la quitan)</span>
+  <span data-i18n-html="se.f2.body"></span>
+</div>
+
+<h2 id="raidh" data-i18n="sf.title">16. Atraco medio por hora (por aldea)</h2>
+<p data-i18n-html="sf.intro"></p>
+<div class="formula">
+  <span class="label" data-i18n="sf.f.lab">Atraco/h</span>
+  <span data-i18n-html="sf.f.body"></span>
+</div>
+
+<h2 id="troopbreak" data-i18n="sg.title">17. Tropas necesarias por tipo (desglose por aldea)</h2>
+<p data-i18n-html="sg.intro"></p>
+<div class="formula">
+  <span class="label" data-i18n="sg.f.lab">Por cada unidad de la aldea</span>
+  <span data-i18n-html="sg.f.body"></span>
+</div>
+
+<h2 id="limits" data-i18n="s14.title">18. Limitaciones honestas</h2>
+<ul>
+  <li data-i18n-html="s14.li1"></li>
+  <li data-i18n-html="s14.li2"></li>
+  <li data-i18n-html="s14.li3"></li>
+  <li data-i18n-html="s14.li4"></li>
+  <li data-i18n-html="s14.li5"></li>
+</ul>
+
+<hr>
+<p class="subtitle" data-i18n="footer">Documento sincronizado con el script.</p>
+
+</main>
+
+</div>
+
+<script>
+const I18N = {
+  es: {
+    'toc.title': 'Índice',
+    'toc.1':  'Introducción',
+    'toc.2':  'Datos de entrada',
+    'toc.3':  'Parámetros configurables',
+    'toc.4':  'Tiempo ida+vuelta (T)',
+    'toc.5':  'Oleadas solapadas (groups)',
+    'toc.6':  'Tropas necesarias',
+    'toc.7':  'Capacidad y fill %',
+    'toc.8':  'Rentabilidad R/h y R/T/h',
+    'toc.9':  'Agregación por aldea, lista y global',
+    'toc.10': 'Histórico entre snapshots',
+    'toc.11': 'Coste a una distancia (sobrantes)',
+    'toc.12': 'Recomendación de qué eliminar',
+    'toc.13': 'Estado: activa / inactiva',
+    'toc.14': 'Color de filas',
+    'toc.t1': 'Tropa detectada (vel/carga)',
+    'toc.t2': 'Producción estimada y Disputada',
+    'toc.t3': 'Atraco medio por hora',
+    'toc.t4': 'Tropas por tipo (aldea)',
+    'toc.15': 'Limitaciones honestas',
+
+    'title': 'Travian Farm Analyzer — cómo calcula',
+    'subtitle': 'Documentación de todas las fórmulas que aplica la herramienta.',
+    'intro.body': 'Esta página explica, paso a paso, qué hace el script con los datos pegados desde Travian. Las constantes que aparecen en los ejemplos son los <em>defaults</em>: tropa Theutates Thunder (TT) galos — <code>baseSpeed=19</code>, <code>tsPct=300</code>, <code>umbral=20</code>, <code>intervalo=30 min</code>, <code>carga=75</code>.',
+
+    'tbl.col.field':   'Campo',
+    'tbl.col.origin':  'Origen',
+    'tbl.col.meaning': 'Significado',
+    'tbl.col.param':   'Param',
+    'tbl.col.default': 'Default',
+    'tbl.col.desc':    'Descripción',
+
+    's1.title': '1. Datos de entrada',
+    's1.intro': 'Por cada farm parseada, la herramienta obtiene como mínimo:',
+    's1.r1.o': 'Paste',                  's1.r1.m': 'Nombre del aldea objetivo',
+    's1.r2.o': 'Paste',                  's1.r2.m': 'Distancia en casillas (ya calculada por Travian)',
+    's1.r3.o': 'Paste',                  's1.r3.m': 'Tropas enviadas por raid (1 oleada)',
+    's1.r4.o': 'Paste — último raid',    's1.r4.m': 'Recursos robados en el último ataque',
+    's1.r5.o': 'Paste — Σ diario',       's1.r5.m': 'Botín acumulado hoy de esa farm (resetea a medianoche del servidor)',
+    's1.r6.o': 'Paste',                  's1.r6.m': 'Hora del último raid (HH:MM:SS, "ayer" o fecha)',
+    's1.r7.o': 'Paste HTML',             's1.r7.m': 'Coordenadas del target (sólo si se pega el código HTML)',
+
+    's2.title': '2. Parámetros configurables',
+    's2.intro': 'Se establecen en la UI y se persisten en <code>localStorage</code>.',
+    's2.r1': 'Velocidad base de la tropa en casillas/hora (TT galos)',
+    's2.r2': '% de velocidad con Plaza de Torneos (TS10 = 300%)',
+    's2.r3': 'Casillas antes de que la TS active el bonus',
+    's2.r4': 'Intervalo entre lanzamientos consecutivos (min)',
+    's2.r5': 'Capacidad de carga por tropa (TT = 75)',
+
+    's3.title': '3. Tiempo de ida+vuelta (T)',
+    's3.intro': 'La Plaza de Torneos sólo aplica su bonus a partir del umbral. Por debajo se va a velocidad base.',
+    's3.f1.lab': 'Velocidad rápida (con TS)',
+    's3.f2.lab': 'Tiempo de ida (h)',
+    's3.f2.body': 'si  dist ≤ threshold:  oneWay = dist / baseSpeed<br>si  dist &gt; threshold:  oneWay = (threshold / baseSpeed) + (dist − threshold) / fastSpeed',
+    's3.f3.lab': 'Tiempo total (ida + vuelta)',
+    's3.ex.lab': 'Ejemplo — d = 50 casillas, defaults',
+    's3.ex.body': 'fastSpeed = 19 × 3 = 57 cas/h<br>oneWay = 20/19 + (50−20)/57 = 1.053 + 0.526 = <b>1.579 h</b><br>T = 2 × 1.579 = <b>3.158 h ≈ 189 min</b>',
+
+    's4.title': '4. Oleadas solapadas necesarias (groups)',
+    's4.intro': 'Para mantener un farm en "flujo continuo" lanzando cada <code>intervalMin</code> minutos, hace falta que mientras un grupo va y vuelve haya otros tantos en camino. Se redondea hacia arriba porque no se puede lanzar medio grupo.',
+    's4.f.lab': 'Grupos por farm',
+    's4.f.body': 'intervalH = intervalMin / 60<br>groups = ⌈ T / intervalH ⌉',
+    's4.ex.lab': 'Ejemplo — T = 3.158 h, intervalo = 30 min',
+    's4.ex.body': 'intervalH = 30/60 = 0.5 h<br>groups = ⌈ 3.158 / 0.5 ⌉ = ⌈ 6.316 ⌉ = <b>7 grupos</b>',
+
+    's5.title': '5. Tropas necesarias por farm y globales',
+    's5.intro': '<code>tt</code> es el nº de tropas por oleada (el valor que tienes configurado en Travian para esa farm).',
+    's5.f1.lab': 'Tropas dedicadas a UNA farm',
+    's5.p2': 'El total a nivel de aldea, lista o global es simplemente la suma sobre todas las farms del grupo:',
+    's5.f2.lab': 'Suma agregada',
+    's5.f2.body': 'ttTotal_grupo = Σ (tt × groups) de todas las farms del grupo',
+    's5.ex.lab': 'Ejemplo',
+    's5.ex.body': 'Una farm a 50 cas con tt=3, groups=7 → ttTotal = 3 × 7 = <b>21 tropas</b> dedicadas sólo para esa farm.',
+
+    's6.title': '6. Capacidad enviada y fill %',
+    's6.f1.lab': 'Capacidad por oleada',
+    's6.f2.lab': 'Fill % — qué llenas vs. lo que envías',
+    's6.f2.body': 'fill = (stolen / cap) × 100      (sólo si cap &gt; 0 y stolen ≠ null)',
+    's6.p': 'Un <code>fill</code> bajo (10–30%) indica que sobra capacidad — la farm produce poco. Un fill alto (≥80%) sugiere que estás sub-dimensionando y dejando recursos atrás.',
+
+    's7.title': '7. Métricas de rentabilidad',
+    's7.f1.lab': 'Recursos por hora (de un viaje completo)',
+    's7.f2.lab': 'Recursos por tropa por hora — métrica CLAVE',
+    's7.p': '<span class="keymet">R/T/h</span> normaliza por tropas y tiempo, así puedes comparar peras y manzanas: una farm cercana con poca tropa puede dar mejor R/T/h que una lejana con muchas tropas. Es la métrica que usa el algoritmo de recomendación (sección 11).',
+    's7.ex.lab': 'Ejemplo',
+    's7.ex.body': 'stolen=300, tt=3, T=3.158 h → R/T/h = 300 / (3 × 3.158) = <b>31.7</b>',
+
+    's8.title': '8. Agregación por aldea, lista y global',
+    's8.intro': 'Las cards superiores y la tabla "por farm list" usan sumas y medias sobre los farms del grupo:',
+    's8.f1.lab': 'Sumas directas',
+    's8.f2.lab': 'Medias',
+    's8.f2.body': 'avgResTTH = media aritmética de R/T/h de las farms con stolen &gt; 0<br>fill_global = (Σ stolen / Σ cap) × 100',
+
+    's9.title': '9. Histórico entre snapshots',
+    's9.intro': 'Cada vez que pulsas <b>Analizar</b> con datos nuevos se guarda un <em>snapshot</em> en <code>localStorage</code>. La vista "Average" promedia entre snapshots de forma cuidada.',
+    's9.sub1': '9.1 Agrupación por día del servidor',
+    's9.p1': 'El paste incluye <code>Travian.Game.timezoneOffsetToUTC</code>; con eso sabemos qué día del servidor corresponde a cada snapshot.',
+    's9.f1.lab': 'Día del snapshot (UTC convertido a hora servidor)',
+    's9.f1.body': 'serverDay = fecha (YYYY-MM-DD) del timestamp del snapshot ajustado por la TZ del servidor',
+    's9.sub2': '9.2 Σ diario por farm',
+    's9.p2': '<code>totalLoot</code> en Travian se resetea a medianoche del servidor. Por eso para cada farm-día tomamos el <b>máximo de Σ observado ese día</b> en lugar de promediar lecturas dispersas.',
+    's9.f2.lab': 'Σ diario por farm',
+    's9.sub3': '9.3 Media entre días',
+    's9.p3': 'El valor mostrado en modo "Average" para <code>totalLoot</code> es el promedio de los máximos diarios. Para <code>stolen</code> se promedian todas las muestras de raids individuales:',
+    's9.f3.lab': 'Promedios y desviación',
+    's9.f3.body': 'totalLoot_avg  = media( dailyTotal por día )<br>totalLoot_std  = stdDev( dailyTotal por día )<br>stolen_avg     = media( stolen de cada snapshot )<br>stolen_std     = stdDev( stolen )',
+    's9.sub4': '9.4 Coeficiente de variación (CV %)',
+    's9.f4.lab': 'CV % — consistencia de la farm',
+    's9.p4': 'Un CV bajo = farm consistente (suele rendir parecido). CV alto = ruleta (a veces mucho, a veces nada). Bueno para priorizar farms predecibles.',
+    's9.sub5': '9.5 Recorte de outliers (opcional)',
+    's9.p5': 'Si activas <b>"Trim outliers"</b>, antes de promediar se descartan el 5% más bajo y el 5% más alto de las muestras. Sólo se aplica con n ≥ 5.',
+
+    's10.title': '10. Estimación de coste a una distancia (sobrantes)',
+    's10.intro': 'Cuando tienes presupuesto sobrante e introduces una distancia hipotética para añadir una nueva farm, el coste se calcula así:',
+    's10.f1.lab': 'Coste de UNA nueva farm a distancia d',
+    's10.f1.body': 'avgWave = media de tt entre las farms actuales de la aldea<br>T(d) = ida+vuelta a esa distancia con tus parámetros<br>groupsAtD = ⌈ T(d) / intervalH ⌉<br>costAtD = ⌈ avgWave × groupsAtD ⌉',
+    's10.f2.lab': 'Cuántas caben con el sobrante',
+
+    's11.title': '11. Recomendación de qué farms eliminar (déficit)',
+    's11.intro': 'Si introduces menos tropas disponibles de las que necesita el ciclo (<code>budget &lt; ttTotal</code>):',
+    's11.f.lab': 'Algoritmo greedy por R/T/h ascendente',
+    's11.f.body': 'deficit = ttTotal_aldea − budget<br><br>1. Ordenar farms de la aldea por R/T/h ascendente (peor primero).<br>&nbsp;&nbsp;&nbsp;Farms sin datos de R/T/h se ordenan como las peores (tratadas como −1).<br>2. Recorrer la lista y acumular su ttTotal en "freed".<br>3. Detenerse cuando freed ≥ deficit.<br>4. Devolver la lista de farms a eliminar.',
+    's11.note.lab': 'Nota',
+    's11.note.body': 'La sugerencia es una guía, no una orden. Una farm sin muestras (R/T/h nulo) se propone primero porque no hay evidencia de rentabilidad — pero podría ser excelente y simplemente no haberse raideado todavía. Tú decides.',
+
+    's12.title': '12. Estado: activa / inactiva',
+    's12.intro': 'Para cada farm en el modo "Average":',
+    's12.f.lab': 'isActive',
+    's12.f.body': 'isActive = (la farm aparece en el último snapshot)<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; AND (el último día visto está entre los últimos 3 días con snapshots)',
+    's12.p': 'Una farm con Σ=0 sigue siendo "activa" — sólo significa que está vacía o defendida en este momento, no que ya no esté en tu farm list.',
+
+    's13.title': '13. Color de filas en la tabla detalle',
+    's13.intro': 'Se calculan los cuartiles de <code>R/T/h</code> sobre los farms con dato (stolen &gt; 0):',
+    's13.f.lab': 'Quartiles de R/T/h',
+    's13.f.body': 'validRTH = lista ordenada de R/T/h &gt; 0 de todas las farms<br>q1 = validRTH[ ⌊ n × 0.25 ⌋ ]<br>q3 = validRTH[ ⌊ n × 0.75 ⌋ ]',
+    's13.p': 'Color asignado a cada fila:',
+    's13.li1': '<b style="color:#81c784">Verde</b> — <code>R/T/h ≥ q3</code> (top 25% rentabilidad)',
+    's13.li2': '<b style="color:#ffb74d">Naranja</b> — <code>R/T/h ≤ q1</code> (bottom 25%)',
+    's13.li3': 'Inactiva → opacidad reducida y texto en gris',
+
+    'sd.title': '14. Tipo de tropa detectado (velocidad y carga por granja)',
+    'sd.intro': 'Si pegas el código HTML de la página, cada granja trae la composición de tropa por ranura (<code>t1…t10</code>) y la tribu del jugador (<code>tribeId</code>). Con el interruptor <b>"Usar tropa detectada"</b> activo (por defecto), cada granja calcula su velocidad y carga reales en vez de usar el preset manual.',
+    'sd.f.lab': 'Velocidad y carga efectivas de la granja',
+    'sd.f.body': 'velocidad = velocidad de la unidad MÁS LENTA de la ola (así se mueve un ejército)<br>carga = Σ (cantidad × carga de cada unidad)<br><br>Esa velocidad sustituye a <code>baseSpeed</code> en T (la TS sigue aplicando pasado el umbral) y esa carga sustituye a <code>cap = tt × carry</code>.',
+    'sd.note.lab': 'Fallback',
+    'sd.note.body': 'Si una granja no tiene tropa detectada (pegado de texto) o usa una unidad fuera del catálogo (ariete, catapulta…), se usa el preset manual para esa granja. Si apagas el interruptor, todo vuelve al preset manual.',
+
+    'se.title': '15. Producción estimada (Prod/h) y Disputada %',
+    'se.intro': 'Reconstruyendo la secuencia de ataques a partir del histórico de snapshots, se estima cuánto produce cada granja y cuánto te la disputan otros jugadores. Necesita al menos 2 ataques en el histórico.',
+    'se.f1.lab': 'Producción estimada (máximo histórico, persistido)',
+    'se.f1.body': 'Para cada par de ataques consecutivos: tasa = botín ÷ hueco entre ambos (h)<br>Prod/h = MÁXIMO de esa tasa observado (se ignoran huecos &lt; 5 min y &gt; 48 h)<br>Se guarda como máximo histórico: solo sube si se observa una tasa mayor.',
+    'se.f2.lab': 'Disputada % (cuánto te la quitan)',
+    'se.f2.body': 'Por cada ataque: esperado = min( Prod/h × hueco , máx disponible visto )<br>déficit = max( 0 , 1 − disponible / esperado )<br>Disputada % = media( déficit ) × 100<br><br>0% = llegas y está todo lo que produjo; % alto = llegas y está vaciada (otros atracan antes).',
+
+    'sf.title': '16. Atraco medio por hora (por aldea)',
+    'sf.intro': 'Cada tarjeta de aldea muestra el ritmo medio de saqueo del día en curso.',
+    'sf.f.lab': 'Atraco/h',
+    'sf.f.body': 'atraco/h = Σ hoy (botín acumulado) ÷ horas transcurridas desde la medianoche del servidor',
+
+    'sg.title': '17. Tropas necesarias por tipo (desglose por aldea)',
+    'sg.intro': 'La tarjeta de aldea desglosa las tropas necesarias para flujo continuo por tipo de unidad (usa la composición detectada).',
+    'sg.f.lab': 'Por cada unidad de la aldea',
+    'sg.f.body': 'requeridas(unidad) = Σ sobre las granjas de la aldea ( cantidad_unidad × groups )',
+
+    's14.title': '18. Limitaciones honestas',
+    's14.li1': '<b>Pérdidas reales:</b> el paste no incluye información de bajas (el icono de espadas verde/amarillo es visual, se pierde al copiar). Cualquier columna o métrica de "perdidas" se eliminó del modelo.',
+    's14.li2': '<b>Coords de targets jugadores:</b> el paste de texto plano no las trae. Sólo aparecen en farms Natars (`Natars -25|-179`) o si pegas el HTML completo (Ctrl+U) — entonces TODAS las farms tienen coords.',
+    's14.li3': '<b>Reset diario de Σ:</b> si tomas snapshots a horas muy distintas del día, el promedio del totalLoot tiene ruido. Toma snapshots a horas similares o usa el modo "Trim outliers".',
+    's14.li4': '<b>n bajo:</b> con pocos snapshots (n &lt; 5) los promedios y la desviación típica son inestables. Cuantos más snapshots, más fiables las métricas.',
+    's14.li5': '<b>R/T/h vs realidad:</b> asume que los raids son continuos al ritmo del intervalo. Si pausas durante horas, la rentabilidad real será menor.',
+
+    'footer': 'Versión del documento generada junto al script. Si las fórmulas cambian en el código fuente, actualiza también este HTML.'
+  },
+
+  en: {
+    'toc.title': 'Contents',
+    'toc.1':  'Introduction',
+    'toc.2':  'Inputs',
+    'toc.3':  'Configurable parameters',
+    'toc.4':  'Round-trip time (T)',
+    'toc.5':  'Overlapping waves (groups)',
+    'toc.6':  'Required troops',
+    'toc.7':  'Capacity & fill %',
+    'toc.8':  'Profitability R/h and R/T/h',
+    'toc.9':  'Aggregations by village, list and global',
+    'toc.10': 'Historical analytics across snapshots',
+    'toc.11': 'Cost at a distance (surplus)',
+    'toc.12': 'Recommendation: what to remove',
+    'toc.13': 'State: active / inactive',
+    'toc.14': 'Row colors',
+    'toc.t1': 'Detected troop (speed/carry)',
+    'toc.t2': 'Estimated production & Disputed',
+    'toc.t3': 'Average raid per hour',
+    'toc.t4': 'Troops by type (village)',
+    'toc.15': 'Honest limitations',
+
+    'title': 'Travian Farm Analyzer — how it calculates',
+    'subtitle': 'Documentation of every formula the tool applies.',
+    'intro.body': 'This page explains step by step what the script does with the data pasted from Travian. The constants used in the examples are the <em>defaults</em>: Theutates Thunder (TT) Gauls — <code>baseSpeed=19</code>, <code>tsPct=300</code>, <code>threshold=20</code>, <code>interval=30 min</code>, <code>carry=75</code>.',
+
+    'tbl.col.field':   'Field',
+    'tbl.col.origin':  'Source',
+    'tbl.col.meaning': 'Meaning',
+    'tbl.col.param':   'Param',
+    'tbl.col.default': 'Default',
+    'tbl.col.desc':    'Description',
+
+    's1.title': '1. Inputs',
+    's1.intro': 'For every farm parsed, the tool gets at minimum:',
+    's1.r1.o': 'Paste',                  's1.r1.m': 'Target village name',
+    's1.r2.o': 'Paste',                  's1.r2.m': 'Distance in tiles (already computed by Travian)',
+    's1.r3.o': 'Paste',                  's1.r3.m': 'Troops sent per raid (one wave)',
+    's1.r4.o': 'Paste — last raid',      's1.r4.m': 'Resources brought back on the last attack',
+    's1.r5.o': 'Paste — daily Σ',        's1.r5.m': "Bounty accumulated today from this farm (resets at server midnight)",
+    's1.r6.o': 'Paste',                  's1.r6.m': "Last raid timestamp (HH:MM:SS, 'yesterday' or date)",
+    's1.r7.o': 'Paste HTML',             's1.r7.m': 'Target coordinates (only if you paste the page source)',
+
+    's2.title': '2. Configurable parameters',
+    's2.intro': 'Set in the UI, persisted in <code>localStorage</code>.',
+    's2.r1': 'Base troop speed in tiles/hour (TT Gauls)',
+    's2.r2': 'Speed % with Tournament Square (TS10 = 300%)',
+    's2.r3': 'Tiles before the TS bonus activates',
+    's2.r4': 'Interval between consecutive launches (min)',
+    's2.r5': 'Carry capacity per troop (TT = 75)',
+
+    's3.title': '3. Round-trip time (T)',
+    's3.intro': 'The Tournament Square only applies its bonus past the threshold. Below it troops travel at base speed.',
+    's3.f1.lab': 'Fast speed (with TS)',
+    's3.f2.lab': 'One-way time (h)',
+    's3.f2.body': 'if  dist ≤ threshold:  oneWay = dist / baseSpeed<br>if  dist &gt; threshold:  oneWay = (threshold / baseSpeed) + (dist − threshold) / fastSpeed',
+    's3.f3.lab': 'Total time (round trip)',
+    's3.ex.lab': 'Example — d = 50 tiles, defaults',
+    's3.ex.body': 'fastSpeed = 19 × 3 = 57 tiles/h<br>oneWay = 20/19 + (50−20)/57 = 1.053 + 0.526 = <b>1.579 h</b><br>T = 2 × 1.579 = <b>3.158 h ≈ 189 min</b>',
+
+    's4.title': '4. Overlapping waves needed (groups)',
+    's4.intro': 'To keep a farm in "continuous flow" by launching every <code>intervalMin</code> minutes, while one wave is in transit there must be others on the way. Rounded up because you cannot launch half a wave.',
+    's4.f.lab': 'Waves per farm',
+    's4.f.body': 'intervalH = intervalMin / 60<br>groups = ⌈ T / intervalH ⌉',
+    's4.ex.lab': 'Example — T = 3.158 h, interval = 30 min',
+    's4.ex.body': 'intervalH = 30/60 = 0.5 h<br>groups = ⌈ 3.158 / 0.5 ⌉ = ⌈ 6.316 ⌉ = <b>7 waves</b>',
+
+    's5.title': '5. Troops needed per farm and aggregated',
+    's5.intro': '<code>tt</code> is the troop count per wave (the value you have configured in Travian for that farm).',
+    's5.f1.lab': 'Troops dedicated to ONE farm',
+    's5.p2': 'The total at the village/list/global level is just the sum across all farms in the group:',
+    's5.f2.lab': 'Aggregated sum',
+    's5.f2.body': 'ttTotal_group = Σ (tt × groups) across all farms in the group',
+    's5.ex.lab': 'Example',
+    's5.ex.body': 'A farm at 50 tiles with tt=3, groups=7 → ttTotal = 3 × 7 = <b>21 troops</b> dedicated to that farm alone.',
+
+    's6.title': '6. Capacity sent and fill %',
+    's6.f1.lab': 'Capacity per wave',
+    's6.f2.lab': 'Fill % — what you fill vs. what you send',
+    's6.f2.body': 'fill = (stolen / cap) × 100      (only if cap &gt; 0 and stolen ≠ null)',
+    's6.p': 'A low <code>fill</code> (10–30%) means you have extra capacity — the farm produces little. A high fill (≥80%) suggests you are under-sizing and leaving resources behind.',
+
+    's7.title': '7. Profitability metrics',
+    's7.f1.lab': 'Resources per hour (of a full round-trip)',
+    's7.f2.lab': 'Resources per troop per hour — KEY metric',
+    's7.p': '<span class="keymet">R/T/h</span> normalises by troops and time, so you can compare apples and oranges: a close farm with few troops can outperform a far one with many troops. This is the metric the recommendation algorithm uses (section 11).',
+    's7.ex.lab': 'Example',
+    's7.ex.body': 'stolen=300, tt=3, T=3.158 h → R/T/h = 300 / (3 × 3.158) = <b>31.7</b>',
+
+    's8.title': '8. Aggregations by village, list and global',
+    's8.intro': 'The top cards and the "by farm list" table use sums and averages over the farms of the group:',
+    's8.f1.lab': 'Direct sums',
+    's8.f2.lab': 'Means',
+    's8.f2.body': 'avgResTTH = arithmetic mean of R/T/h over farms with stolen &gt; 0<br>fill_global = (Σ stolen / Σ cap) × 100',
+
+    's9.title': '9. Historical analytics across snapshots',
+    's9.intro': 'Every time you press <b>Analyze</b> with new data, a <em>snapshot</em> is stored in <code>localStorage</code>. The "Average" view averages across snapshots in a careful way.',
+    's9.sub1': '9.1 Grouping by server day',
+    's9.p1': 'The paste includes <code>Travian.Game.timezoneOffsetToUTC</code>; with that we know which server day each snapshot belongs to.',
+    's9.f1.lab': "Snapshot's server day (UTC shifted by server TZ)",
+    's9.f1.body': "serverDay = date (YYYY-MM-DD) of the snapshot's timestamp shifted by the server TZ",
+    's9.sub2': '9.2 Daily Σ per farm',
+    's9.p2': '<code>totalLoot</code> in Travian resets at server midnight. So for each farm-day we take the <b>max Σ observed that day</b> instead of averaging scattered readings.',
+    's9.f2.lab': 'Daily Σ per farm',
+    's9.sub3': '9.3 Mean across days',
+    's9.p3': 'The value shown in "Average" mode for <code>totalLoot</code> is the mean of daily peaks. For <code>stolen</code> all per-raid samples are averaged:',
+    's9.f3.lab': 'Means and standard deviation',
+    's9.f3.body': 'totalLoot_avg  = mean( dailyTotal per day )<br>totalLoot_std  = stdDev( dailyTotal per day )<br>stolen_avg     = mean( stolen per snapshot )<br>stolen_std     = stdDev( stolen )',
+    's9.sub4': '9.4 Coefficient of variation (CV %)',
+    's9.f4.lab': 'CV % — farm consistency',
+    's9.p4': 'Low CV = consistent farm (similar yields). High CV = roulette (sometimes huge, sometimes nothing). Good for prioritising predictable farms.',
+    's9.sub5': '9.5 Outlier trimming (optional)',
+    's9.p5': 'If you enable <b>"Trim outliers"</b>, before averaging the bottom 5% and top 5% of samples are dropped. Only applies with n ≥ 5.',
+
+    's10.title': '10. Cost at a distance (surplus)',
+    's10.intro': 'When you have surplus budget and enter a hypothetical distance to add a new farm, the cost is computed like this:',
+    's10.f1.lab': 'Cost of ONE new farm at distance d',
+    's10.f1.body': "avgWave = mean of tt across the village's current farms<br>T(d) = round-trip at that distance with your params<br>groupsAtD = ⌈ T(d) / intervalH ⌉<br>costAtD = ⌈ avgWave × groupsAtD ⌉",
+    's10.f2.lab': 'How many fit in the surplus',
+
+    's11.title': '11. Recommendation: which farms to remove (deficit)',
+    's11.intro': 'If you enter fewer available troops than the cycle needs (<code>budget &lt; ttTotal</code>):',
+    's11.f.lab': 'Greedy algorithm by ascending R/T/h',
+    's11.f.body': 'deficit = ttTotal_village − budget<br><br>1. Sort village farms by R/T/h ascending (worst first).<br>&nbsp;&nbsp;&nbsp;Farms with no R/T/h sample are sorted as the worst (treated as −1).<br>2. Walk the list and accumulate ttTotal into "freed".<br>3. Stop when freed ≥ deficit.<br>4. Return the list of farms to remove.',
+    's11.note.lab': 'Note',
+    's11.note.body': 'The suggestion is guidance, not a command. A farm with no samples (null R/T/h) is proposed first because there is no profitability evidence — but it could be excellent and simply never raided yet. You decide.',
+
+    's12.title': '12. State: active / inactive',
+    's12.intro': 'For each farm in "Average" mode:',
+    's12.f.lab': 'isActive',
+    's12.f.body': 'isActive = (the farm appears in the latest snapshot)<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; AND (the last seen day is within the last 3 snapshot days)',
+    's12.p': 'A farm with Σ=0 is still "active" — it just means it is currently empty or defended, not that it has been removed from your farm list.',
+
+    's13.title': '13. Detail table row colors',
+    's13.intro': 'Quartiles of <code>R/T/h</code> are computed over farms with data (stolen &gt; 0):',
+    's13.f.lab': 'R/T/h quartiles',
+    's13.f.body': 'validRTH = sorted list of R/T/h &gt; 0 across all farms<br>q1 = validRTH[ ⌊ n × 0.25 ⌋ ]<br>q3 = validRTH[ ⌊ n × 0.75 ⌋ ]',
+    's13.p': 'Colour assigned to each row:',
+    's13.li1': '<b style="color:#81c784">Green</b> — <code>R/T/h ≥ q3</code> (top 25% profitability)',
+    's13.li2': '<b style="color:#ffb74d">Orange</b> — <code>R/T/h ≤ q1</code> (bottom 25%)',
+    's13.li3': 'Inactive → reduced opacity and grey text',
+
+    'sd.title': '14. Detected troop (per-farm speed and carry)',
+    'sd.intro': 'If you paste the page HTML source, each farm carries its per-slot troop composition (<code>t1…t10</code>) and the player tribe (<code>tribeId</code>). With the <b>"Use detected troop"</b> toggle on (default), each farm computes its real speed and carry instead of using the manual preset.',
+    'sd.f.lab': "Farm's effective speed and carry",
+    'sd.f.body': 'speed = speed of the SLOWEST unit in the wave (that is how an army moves)<br>carry = Σ (count × unit carry)<br><br>That speed replaces <code>baseSpeed</code> in T (TS still applies past the threshold) and that carry replaces <code>cap = tt × carry</code>.',
+    'sd.note.lab': 'Fallback',
+    'sd.note.body': 'If a farm has no detected troop (text paste) or uses a unit outside the catalogue (ram, catapult…), the manual preset is used for that farm. Turning the toggle off reverts everything to the manual preset.',
+
+    'se.title': '15. Estimated production (Prod/h) and Disputed %',
+    'se.intro': 'By reconstructing the raid sequence from the snapshot history, the tool estimates how much each farm produces and how contested it is. Needs at least 2 raids in history.',
+    'se.f1.lab': 'Estimated production (persisted running maximum)',
+    'se.f1.body': 'For each pair of consecutive raids: rate = bounty ÷ gap between them (h)<br>Prod/h = MAX of that rate observed (gaps &lt; 5 min and &gt; 48 h are ignored)<br>Stored as a running maximum: it only rises when a higher rate is seen.',
+    'se.f2.lab': 'Disputed % (how often others beat you to it)',
+    'se.f2.body': 'For each raid: expected = min( Prod/h × gap , max available ever seen )<br>shortfall = max( 0 , 1 − available / expected )<br>Disputed % = mean( shortfall ) × 100<br><br>0% = you arrive to everything it produced; high % = you arrive to an emptied farm (others raid it first).',
+
+    'sf.title': '16. Average raid per hour (per village)',
+    'sf.intro': 'Each village card shows the average looting rate for the current day.',
+    'sf.f.lab': 'Raid/h',
+    'sf.f.body': 'raid/h = Σ today (cumulative bounty) ÷ hours elapsed since server midnight',
+
+    'sg.title': '17. Troops needed by type (per-village breakdown)',
+    'sg.intro': 'The village card breaks the troops needed for continuous flow down by unit type (using the detected composition).',
+    'sg.f.lab': 'For each unit in the village',
+    'sg.f.body': 'needed(unit) = Σ over the village farms ( unit_count × groups )',
+
+    's14.title': '18. Honest limitations',
+    's14.li1': '<b>Real losses:</b> the paste does not include casualty info (the green/yellow swords icon is visual, lost when copying). Any "losses" column or metric was removed from the model.',
+    's14.li2': '<b>Player target coords:</b> the plain-text paste does not include them. They appear only in Natars farms (`Natars -25|-179`) or if you paste the full HTML source (Ctrl+U) — then ALL farms have coords.',
+    's14.li3': '<b>Daily Σ reset:</b> if you take snapshots at very different times of day, the totalLoot average is noisy. Take snapshots at similar times or enable "Trim outliers".',
+    's14.li4': '<b>Low n:</b> with few snapshots (n &lt; 5) means and standard deviation are unstable. The more snapshots, the more reliable the metrics.',
+    's14.li5': '<b>R/T/h vs. reality:</b> assumes raids are continuous at the interval rate. If you pause for hours, real profitability will be lower.',
+
+    'footer': 'Document version generated alongside the script. If the source formulas change, update this HTML too.'
+  }
+};
+
+let currentLang = 'es';
+const LANG_USER_KEY = 'travian_lang_user';
+
+function applyTranslations() {
+  document.documentElement.lang = currentLang;
+  const dict = I18N[currentLang] || I18N.es;
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const k = el.dataset.i18n;
+    if (dict[k] != null) el.textContent = dict[k];
+  });
+  document.querySelectorAll('[data-i18n-html]').forEach(el => {
+    const k = el.dataset.i18nHtml;
+    if (dict[k] != null) el.innerHTML = dict[k];
+  });
+  document.querySelectorAll('.lang-toggle button').forEach(b => {
+    b.classList.toggle('active', b.dataset.lang === currentLang);
+  });
+}
+
+function setLang(lang) {
+  if (!I18N[lang]) return;
+  currentLang = lang;
+  applyTranslations();
+}
+
+document.querySelectorAll('.lang-toggle button').forEach(b => {
+  b.addEventListener('click', () => {
+    const newLang = b.dataset.lang;
+    if (newLang === currentLang) return;
+    try { localStorage.setItem(LANG_USER_KEY, newLang); } catch (e) {}
+    setLang(newLang);
+  });
+});
+
+(function init() {
+  let stored = null;
+  try { stored = localStorage.getItem(LANG_USER_KEY); } catch (e) {}
+  setLang(stored || 'es');
+})();
+</script>
+
+</body>
+</html>
